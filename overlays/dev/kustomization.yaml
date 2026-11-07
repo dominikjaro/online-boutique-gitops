@@ -14,9 +14,9 @@ images:
   - name: gcr-currencyservice
     newName: gcr.io/google-samples/microservices-demo/currencyservice
     newTag: v0.10.0
-  # - name: gcr-emailservice
-  #   newName: gcr.io/google-samples/microservices-demo/emailservice
-  #   newTag: v0.10.0
+  - name: gcr-emailservice
+    newName: gcr.io/google-samples/microservices-demo/emailservice
+    newTag: v0.10.0
   - name: gcr-checkoutservice
     newName: gcr.io/google-samples/microservices-demo/checkoutservice
     newTag: v0.10.0
@@ -26,12 +26,12 @@ images:
   - name: gcr-productcatalogservice
     newName: gcr.io/google-samples/microservices-demo/productcatalogservice
     newTag: v0.10.0
-  # - name: gcr-shippingservice
-  #   newName: gcr.io/google-samples/microservices-demo/shippingservice
-  #   newTag: v0.10.0
-  # - name: gcr-recommendationservice
-  #   newName: gcr.io/google-samples/microservices-demo/recommendationservice
-  #   newTag: v0.10.0
+  - name: gcr-shippingservice
+    newName: gcr.io/google-samples/microservices-demo/shippingservice
+    newTag: v0.10.0
+  - name: gcr-recommendationservice
+    newName: gcr.io/google-samples/microservices-demo/recommendationservice
+    newTag: v0.10.0
   - name: gcr-paymentservice
     newName: gcr.io/google-samples/microservices-demo/paymentservice
     newTag: v0.10.0
