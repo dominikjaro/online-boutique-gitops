@@ -73,3 +73,11 @@ AWS EKS Cluster
   * There we defined the SecretStore (ClusterSecretStore reference) and the Remote secret name/key to fetch.
   * Target is the name of the K8s native secret that ExternalSecret will create.
 * In the payementservice.yaml manifest we reference the ExternalSecret as an ENV var to get the needed secrets.
+
+# Istio
+
+* Under the `platform/istio` dirctory we we have the Istio gateway for routing traffix (see the virtual service object under the components)
+(Gateway is for routing external traffic and Virtual Service for internal routing)
+* We also have PeerAuthentication which enforces mTLS between services if the mode is set to STRICT, or PERMISSIVE for relaxed mode.
+* AuthorizationPolicies like the frontend one control access to services.
+* ExternlSecrets to store the TLS cert and key values.
