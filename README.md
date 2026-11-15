@@ -10,19 +10,23 @@ This repository acts as the single source of truth for cluster state, managed vi
 
 ```plaintext
 .
-├── base/                   # Baseline manifests shared across all environments
+├── base/                           # Base manifests for all microservices
 │   ├── adservice.yaml
 │   ├── frontend.yaml
+│   ├── ...
 │   └── kustomization.yaml
-├── overlays/               # Environment-specific overrides and configuration patches
-│   ├── dev/
-│   │   ├── kustomization.yaml
-│   │   └── patches/
-│       
-└── platform/               # Cluster-wide infrastructure & governance manifests
-    └── open-policy-agent/
-        ├── templates/      # OPA ConstraintTemplates (Rego logic definitions)
-        └── constraints/    # OPA Constraints enforcing active cluster policies
+├── components/                     # App-level VirtualService and ExternalSecret
+│   ├── frontend-virtual-service.yaml
+│   ├── stripe-external-secret.yaml
+│   └── kustomization.yaml
+├── overlays/                       # Env-specific configs and image tags
+│   └── dev/
+│       └── kustomization.yaml
+└── platform/                       # Cluster-wide resources
+    ├── external-secrets/           # ClusterSecretStore for AWS Secrets Manager
+    ├── istio/                      # Gateway, mTLS, AuthPolicies, TLS secret
+    ├── open-policy-agent/          # OPA templates and constraints
+    └── kustomization.yaml
 ```
 
 ## Policy-as-Code (OPA Gatekeeper)
@@ -61,10 +65,10 @@ AWS EKS Cluster
 
  # ClusterSecretStore and ExternalSecret
 
-* External Secrets Controller was deployed to give us the CRDs e.g. (ClusterSecretStore and ExternalSecret)
-* ClusterSecretStore defines the external secret backend e.g. AWS Secrets Manager in our case.
+* **External Secrets Controller** was deployed to give us the CRDs e.g. (ClusterSecretStore and ExternalSecret)
+* **ClusterSecretStore** defines the external secret backend e.g. AWS Secrets Manager in our case.
   * Responsible for authentication and the access (we are using a Service Account to access that secret backend)
-* ExternalSecret references secrets from the backend and syncs them to the cluster.
+* **ExternalSecret** references secrets from the backend and syncs them to the cluster.
   * References the SecretStore as well which knows how to saccess the data.
   * It creates s Kubernetes native secret with the value of the Remote secret from the secret backend (e.g. AWS Secrets Manager)
 
@@ -72,12 +76,12 @@ AWS EKS Cluster
 * The ExternalSecret is part of the application overlays hence this lives under the components and deployed with the app overlays.
   * There we defined the SecretStore (ClusterSecretStore reference) and the Remote secret name/key to fetch.
   * Target is the name of the K8s native secret that ExternalSecret will create.
-* In the payementservice.yaml manifest we reference the ExternalSecret as an ENV var to get the needed secrets.
+* In the `payementservice.yaml` manifest we reference the ExternalSecret as an ENV var to get the needed secrets.
 
 # Istio
 
-* Under the `platform/istio` dirctory we we have the Istio gateway for routing traffix (see the virtual service object under the components)
+* Under the `platform/istio` dirctory we we have the **Istio gateway** for routing traffic (see the virtual service object under the components)
 (Gateway is for routing external traffic and Virtual Service for internal routing)
-* We also have PeerAuthentication which enforces mTLS between services if the mode is set to STRICT, or PERMISSIVE for relaxed mode.
-* AuthorizationPolicies like the frontend one control access to services.
-* ExternlSecrets to store the TLS cert and key values.
+* We also have **PeerAuthentication** which enforces mTLS between services if the mode is set to STRICT, or PERMISSIVE for relaxed mode.
+* **AuthorizationPolicies** like the frontend one control access to services.
+* **ExternlSecrets** to store the TLS cert and key values.
