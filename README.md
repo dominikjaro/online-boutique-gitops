@@ -4,9 +4,9 @@ GitOps repository managing the declarative Kubernetes manifests and platform pol
 
 This repository acts as the single source of truth for cluster state, managed via Argo CD and structured using Kustomize. It manages two primary scopes:
 
-* **Application Workloads:** Declarative Kubernetes deployments, services, and configurations for all Online Boutique microservices.
+- **Application Workloads:** Declarative Kubernetes deployments, services, and configurations for all Online Boutique microservices.
 
-* **Platform & Policy Enforcement:** Open Policy Agent (OPA) Gatekeeper policies enforcing security baselines across the cluster.
+- **Platform & Policy Enforcement:** Open Policy Agent (OPA) Gatekeeper policies enforcing security baselines across the cluster.
 
 ```plaintext
 .
@@ -33,9 +33,9 @@ This repository acts as the single source of truth for cluster state, managed vi
 
 Cluster security policies are declared under platform/ using OPA Gatekeeper ConstraintTemplates and Constraints:
 
-* **Disallow Privileged Containers:** Blocks any container attempting to run with securityContext.privileged: true to prevent container breakout risks.
+- **Disallow Privileged Containers:** Blocks any container attempting to run with securityContext.privileged: true to prevent container breakout risks.
 
-* **Block NodePort Services:** Prevents services from using NodePort to avoid exposing them outside the cluster.
+- **Block NodePort Services:** Prevents services from using NodePort to avoid exposing them outside the cluster.
 
 ## GitOps Deployment Workflow
 
@@ -56,6 +56,7 @@ AWS EKS Cluster
 ```
 
 1. **Upstream Trigger:** When an application microservice CI pipeline builds and pushes a new container image to ECR, it triggers this repository's downstream pipeline.
+   1. The upstream pipeline passes `MS_NAME` and `MS_VERSION` to bump the tag with `yq`.
 
 2. **Overlay Patching:** The pipeline updates the target image tag in the overlay files.
 
@@ -65,23 +66,23 @@ AWS EKS Cluster
 
  # ClusterSecretStore and ExternalSecret
 
-* **External Secrets Controller** was deployed to give us the CRDs e.g. (ClusterSecretStore and ExternalSecret)
-* **ClusterSecretStore** defines the external secret backend e.g. AWS Secrets Manager in our case.
-  * Responsible for authentication and the access (we are using a Service Account to access that secret backend)
-* **ExternalSecret** references secrets from the backend and syncs them to the cluster.
-  * References the SecretStore as well which knows how to saccess the data.
-  * It creates s Kubernetes native secret with the value of the Remote secret from the secret backend (e.g. AWS Secrets Manager)
+- **External Secrets Controller** was deployed to give us the CRDs e.g. (ClusterSecretStore and ExternalSecret)
+- **ClusterSecretStore** defines the external secret backend e.g. AWS Secrets Manager in our case.
+  - Responsible for authentication and the access (we are using a Service Account to access that secret backend)
+- **ExternalSecret** references secrets from the backend and syncs them to the cluster.
+  - References the SecretStore as well which knows how to saccess the data.
+  - It creates s Kubernetes native secret with the value of the Remote secret from the secret backend (e.g. AWS Secrets Manager)
 
-* We created the ClusterSecretStore under the platform directory - which has the ServiceAccount reference for accessing AWS Secrets Manager.
-* The ExternalSecret is part of the application overlays hence this lives under the components and deployed with the app overlays.
-  * There we defined the SecretStore (ClusterSecretStore reference) and the Remote secret name/key to fetch.
-  * Target is the name of the K8s native secret that ExternalSecret will create.
-* In the `payementservice.yaml` manifest we reference the ExternalSecret as an ENV var to get the needed secrets.
+- We created the ClusterSecretStore under the platform directory - which has the ServiceAccount reference for accessing AWS Secrets Manager.
+- The ExternalSecret is part of the application overlays hence this lives under the components and deployed with the app overlays.
+  - There we defined the SecretStore (ClusterSecretStore reference) and the Remote secret name/key to fetch.
+  - Target is the name of the K8s native secret that ExternalSecret will create.
+- In the `payementservice.yaml` manifest we reference the ExternalSecret as an ENV var to get the needed secrets.
 
 # Istio
 
-* Under the `platform/istio` dirctory we we have the **Istio gateway** for routing traffic (see the virtual service object under the components)
+- Under the `platform/istio` dirctory we we have the **Istio gateway** for routing traffic (see the virtual service object under the components)
 (Gateway is for routing external traffic and Virtual Service for internal routing)
-* We also have **PeerAuthentication** which enforces mTLS between services if the mode is set to STRICT, or PERMISSIVE for relaxed mode.
-* **AuthorizationPolicies** like the frontend one control access to services.
-* **ExternlSecrets** to store the TLS cert and key values.
+- We also have **PeerAuthentication** which enforces mTLS between services if the mode is set to STRICT, or PERMISSIVE for relaxed mode.
+- **AuthorizationPolicies** like the frontend one control access to services, or `argocd-authorization-policy.yaml` to deny traffic from online-boutique to argocd.
+- **ExternlSecrets** to store the TLS cert and key values.
